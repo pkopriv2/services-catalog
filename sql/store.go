@@ -51,23 +51,19 @@ func NewSqlStore(db sql.Driver, schemas sql.SchemaRegistry) (ret core.Storage, e
 
 func (s *SqlServiceStore) SaveService(service core.Service) (err error) {
 	if service.Id == emptyId {
-		err = errors.Wrapf(core.ErrState, "invalid service id")
+		err = errors.Wrapf(core.ErrState, "Id must not be empty")
 		return
 	}
 	if service.Name == "" {
-		err = errors.Wrapf(core.ErrState, "invalid service name")
-		return
-	}
-	if service.Desc == "" {
-		err = errors.Wrapf(core.ErrState, "invalid service description")
+		err = errors.Wrapf(core.ErrState, "Name must not be empty")
 		return
 	}
 
 	defer func() {
-		if errs.Is(err, errors.New("UNIQUE")) { // this isn't portable across databases
+		switch {
+		case errs.Is(err, sql.ErrSqliteUnique): // not portable
 			err = core.ErrConflict
-		}
-		if errs.Is(err, sql.ErrNone) {
+		case errs.Is(err, sql.ErrNone):
 			err = errors.Wrapf(core.ErrNoService, "No such service [%v]", service.Id)
 		}
 	}()
@@ -88,19 +84,19 @@ func (s *SqlServiceStore) SaveService(service core.Service) (err error) {
 
 func (s *SqlServiceStore) SaveVersion(version core.Version) (err error) {
 	if version.ServiceId == emptyId {
-		err = errors.Wrapf(core.ErrState, "invalid service id")
+		err = errors.Wrapf(core.ErrState, "ServiceId must not be empty")
 		return
 	}
 	if version.Name == "" {
-		err = errors.Wrapf(core.ErrState, "invalid version name")
+		err = errors.Wrapf(core.ErrState, "Name must not be empty")
 		return
 	}
 
 	defer func() {
-		if errs.Is(err, errors.New("UNIQUE")) { // this isn't portable across databases
+		switch {
+		case errs.Is(err, sql.ErrSqliteUnique): // not portable
 			err = core.ErrConflict
-		}
-		if errs.Is(err, sql.ErrNone) {
+		case errs.Is(err, sql.ErrNone):
 			err = errors.Wrapf(core.ErrNoService, "No such service [%v]", version.ServiceId)
 		}
 	}()
@@ -114,6 +110,19 @@ func (s *SqlServiceStore) SaveVersion(version core.Version) (err error) {
 }
 
 func (s *SqlServiceStore) ListServices(filter core.Filter, page core.Page) (ret core.Catalog, err error) {
+
+	// Need to validate the order field since this will be part of the query
+	// itself (not one of the bindings). This is to protect against sql injection.
+	switch page.OrderBy {
+	default:
+		err = errors.Wrapf(core.ErrState, "Invalid order by field [%v]. Must be one of [name, desc, updated]", page.OrderBy)
+		return
+	case
+		"name",
+		"desc",
+		"updated":
+	}
+
 	// In order to implement proper pagination, we need to use an inner
 	// select which is not handled well by the sql query builder.  Just
 	// use raw sql to construct this query.
@@ -144,19 +153,36 @@ from
 					and o.version > s.version
 			)
 			%v
-		order by s.name, s.id limit %v offset %v
+		order by s.%v, s.id limit %v offset %v
 	) as s
 left join version as v on v.service_id = s.id
+order by s.%v, v.created
 `
+
+	// Add filter arguments
 	inner, binds := "", []interface{}{}
 	if filter.NameContains != nil {
 		inner += "and s.name like ?"
 		binds = append(binds, "%"+*filter.NameContains+"%")
 	}
+
 	if filter.DescContains != nil {
 		inner += "and s.desc like ?"
 		binds = append(binds, "%"+*filter.DescContains+"%")
 	}
+
+	if filter.ServiceId != nil {
+		inner += "and s.id = ?"
+		binds = append(binds, *filter.ServiceId)
+	}
+
+	// Finally, compile the real query
+	query = fmt.Sprintf(query,
+		inner,
+		page.OrderBy,
+		page.Limit,
+		page.Offset,
+		page.OrderBy)
 
 	type row struct {
 		core.Service
@@ -166,18 +192,21 @@ left join version as v on v.service_id = s.id
 
 	err = s.db.Do(
 		sql.Scan(
-			sql.Raw(
-				fmt.Sprintf(query, inner, page.Limit, page.Offset),
-				binds...),
+			sql.Raw(query, binds...),
 			sql.Slice(&results, sql.MultiStruct)))
 	if err != nil {
 		return
 	}
 
-	services := make(map[uuid.UUID]core.Service)
+	services := make([]core.Service, 0, len(results))
 	versions := make(map[uuid.UUID][]core.Version)
 	for _, r := range results {
-		services[r.Service.Id] = r.Service
+		// add the service if we haven't seen it before
+		if len(services) == 0 || services[len(services)-1].Id != r.Service.Id {
+			services = append(services, r.Service)
+		}
+
+		// add the version if one exists.
 		if r.Version.ServiceId != emptyId {
 			versions[r.Version.ServiceId] =
 				append(versions[r.Version.ServiceId], r.Version)

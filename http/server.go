@@ -140,6 +140,7 @@ func ServiceHandlers(svc *http.Service) {
 			if err := http.ParseQueryParams(req,
 				http.Param("name", http.String, &filter.NameContains),
 				http.Param("desc", http.String, &filter.DescContains),
+				http.Param("id", http.UUID, &filter.ServiceId),
 			); err != nil {
 				ret = http.BadRequest(err)
 				return
@@ -149,6 +150,7 @@ func ServiceHandlers(svc *http.Service) {
 			if err := http.ParseQueryParams(req,
 				http.Param("offset", http.Uint64, &page.Offset),
 				http.Param("limit", http.Uint64, &page.Limit),
+				http.Param("order", http.String, &page.OrderBy),
 			); err != nil {
 				ret = http.BadRequest(err)
 				return

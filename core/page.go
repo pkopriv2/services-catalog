@@ -7,13 +7,14 @@ package core
 // libraries needing transport/storage apis but leaving it here for
 // simplicity
 type Page struct {
-	Offset uint64 `json:"offset"`
-	Limit  uint64 `json:"limit"`
+	Offset  uint64 `json:"offset"`
+	Limit   uint64 `json:"limit"`
+	OrderBy string `json:"order_by"`
 }
 
 // Constructs a new page from a list of options
 func NewPage(fns ...func(*Page)) (ret Page) {
-	ret = Page{Limit: 1024}
+	ret = Page{Limit: 1024, OrderBy: "name"}
 	for _, fn := range fns {
 		fn(&ret)
 	}
@@ -38,6 +39,13 @@ func Limit(num uint64) func(*Page) {
 // Returns a page option that sets the offset of the result batch
 func Offset(num uint64) func(*Page) {
 	return func(o *Page) {
-		o.Limit = num
+		o.Offset = num
+	}
+}
+
+// Returns a page option that sets the order by field
+func OrderBy(field string) func(*Page) {
+	return func(o *Page) {
+		o.OrderBy = field
 	}
 }

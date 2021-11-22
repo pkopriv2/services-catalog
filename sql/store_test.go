@@ -73,7 +73,7 @@ func TestServiceStore(t *testing.T) {
 		}
 
 		assert.Equal(t, 1, len(catalog.Services))
-		assert.Equal(t, svc, catalog.Services[svc.Id])
+		assert.Equal(t, svc, catalog.Services[0])
 		assert.Equal(t, []core.Version{v}, catalog.Versions[svc.Id])
 	}) {
 		return
@@ -103,7 +103,7 @@ func TestServiceStore(t *testing.T) {
 		}
 
 		assert.Equal(t, 1, len(catalog.Services))
-		assert.Equal(t, svc, catalog.Services[svc.Id])
+		assert.Equal(t, svc, catalog.Services[0])
 	}) {
 		return
 	}
@@ -118,7 +118,7 @@ func TestServiceStore(t *testing.T) {
 		}
 
 		assert.Equal(t, 1, len(catalog.Services))
-		assert.Equal(t, svc, catalog.Services[svc.Id])
+		assert.Equal(t, svc, catalog.Services[0])
 	}) {
 		return
 	}
@@ -147,7 +147,7 @@ func TestServiceStore(t *testing.T) {
 		}
 
 		assert.Equal(t, 1, len(catalog.Services))
-		assert.Equal(t, svc, catalog.Services[svc.Id])
+		assert.Equal(t, svc, catalog.Services[0])
 	}) {
 		return
 	}
@@ -162,7 +162,7 @@ func TestServiceStore(t *testing.T) {
 		}
 
 		assert.Equal(t, 1, len(catalog.Services))
-		assert.Equal(t, svc, catalog.Services[svc.Id])
+		assert.Equal(t, svc, catalog.Services[0])
 	}) {
 		return
 	}
@@ -183,9 +183,9 @@ func TestServiceStore(t *testing.T) {
 		}
 
 		assert.Equal(t, 3, len(catalog.Services))
-		assert.Equal(t, svc, catalog.Services[svc.Id])
-		assert.Equal(t, svc2, catalog.Services[svc2.Id])
-		assert.Equal(t, svc3, catalog.Services[svc3.Id])
+		assert.Equal(t, svc, catalog.Services[0])
+		assert.Equal(t, svc2, catalog.Services[1])
+		assert.Equal(t, svc3, catalog.Services[2])
 	}) {
 		return
 	}

@@ -47,8 +47,10 @@ func (c *Client) ListServices(filter core.Filter, page core.Page) (ret core.Cata
 			http.WithHeader(headers.Accept, c.Enc.Mime()),
 			http.WithQueryParam("name", filter.NameContains),
 			http.WithQueryParam("desc", filter.DescContains),
+			http.WithQueryParam("id", filter.ServiceId),
 			http.WithQueryParam("offset", page.Offset),
-			http.WithQueryParam("limit", page.Limit)),
+			http.WithQueryParam("limit", page.Limit),
+			http.WithQueryParam("order", page.OrderBy)),
 		http.ExpectAll(
 			http.ExpectCode(200),
 			http.ExpectStruct(enc.DefaultRegistry, &ret)))
