@@ -9,6 +9,8 @@ storage implementation and an HTTP transport implementation.
 * Multiple services with same name allowed
 * Services may have [0,n] versions
 * No constraints on versions types (e.g. semver)
+* Versions are immutable
+* Services are mutable
 
 ## Dependencies
 
@@ -51,9 +53,9 @@ go run main.go list
 * core - Core data types and libraries (see core/api.go)
 * http - HTTP client & server
 * sql  - SQL storage implementation
-* main.go - main entrypoint
+* main.go - Main entrypoint
 ```
 
-## Design Overview
+## Design Considerations
 
 

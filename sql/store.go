@@ -73,7 +73,7 @@ func (s *SqlServiceStore) SaveService(service core.Service) (err error) {
 	}()
 
 	// If this is the first version, just go ahead and insert.  If a concurrent
-	// insert is happening, the unique constraint will previous one from winning.
+	// insert is happening, the unique constraint will prevent one from winning.
 	if service.Version <= 0 {
 		return s.db.Do(sql.Exec(SchemaService.Insert(service)))
 	}

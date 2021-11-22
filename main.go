@@ -23,7 +23,7 @@ var (
 )
 
 func main() {
-	env, err := tool.NewEnvironment("~/.konghq/config.yaml")
+	env, err := tool.NewEnvironment("~/.kong/config.yaml")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to initialize environment: %v\n", err)
 		os.Exit(1)
