@@ -31,15 +31,21 @@ To begin listing the catalog, run:
 go run main.go list
 ```
 
-You can filter results by name, version or id:
+You can filter results by name, description or id:
 ```
 go run main.go list --name "example"
 go run main.go list --desc "example"
+go run main.go list --id 269f1872-4be9-11ec-8acb-9801a796f7a7
+```
+
+You can view the versions for services by supplying a `-v` flag, e.g.:
+```
+go run main.go list -v
 ```
 
 Paging options can be supplied:
 ```
-go run main.go list --offset 10 -n 10"
+go run main.go list --offset 10 -n 10" --orderBy name
 ```
 
 ## Project Organization
@@ -90,7 +96,7 @@ inconsistent results. For example, a service may have been deleted before the co
 versions could be gathered, resulting in an inconsistent view. Instead, I decided to 
 perform the join in a single query. You can view the query here:
 
-* https://github.com/pkopriv2/services-catalog/blob/main/sql/store.go#L120-L149
+* https://github.com/pkopriv2/services-catalog/blob/main/sql/store.go#L129-L159
 
 And lastly, the storage is exposed by a technology-agnostic API. New implementations
 can be injected at runtime. You can view the API here:

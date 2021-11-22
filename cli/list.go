@@ -39,7 +39,7 @@ var (
 	}
 
 	OrderByFlag = tool.StringFlag{
-		Name:  "order",
+		Name:  "orderBy",
 		Usage: "Order the results by field. Must be one of [name, desc, updated]",
 	}
 
@@ -120,7 +120,7 @@ Services(Total={{.Num}}):
 
     {{ "#/id" | col 36 | header }} {{ "#/name" | col 12 | header }} {{ "#/desc" | header }}
 
-{{- range $id, $service := .Catalog.Services}}
+{{- range .Catalog.Services}}
   {{"*" | item }} {{ .Id.String | col 36 }} {{ .Name | col 12 }} {{ .Desc }}
 {{- end}}
 `
@@ -130,9 +130,9 @@ Services(Total={{.Num}}):
 
     {{ "#/id" | col 36 | header }} {{ "#/name" | col 12 | header }} {{ "#/desc" | header }}
 
-{{- range $id, $service := .Catalog.Services}}
+{{- range .Catalog.Services}}
   {{"*" | item }} {{ .Id.String | col 36  }} {{ .Name | col 12 }} {{ .Desc }}
-{{- range index $.Catalog.Versions $id }}
+{{- range index $.Catalog.Versions .Id }}
       - {{ .Name }} ({{ .Created | since | info }})
 {{- end}}
 {{- end}}
