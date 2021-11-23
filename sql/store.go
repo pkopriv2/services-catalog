@@ -156,7 +156,7 @@ from
 		order by s.%v, s.id limit %v offset %v
 	) as s
 left join version as v on v.service_id = s.id
-order by s.%v, v.created
+order by s.%v, s.id, v.created
 `
 
 	// Add filter arguments
