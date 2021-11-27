@@ -38,12 +38,7 @@ Starts a local server.
 				}
 				defer driver.Close()
 
-				registry := sql.NewSchemaRegistry("KONGHQ")
-				if err != nil {
-					return
-				}
-
-				store, err := svcsql.NewSqlStore(driver, registry)
+				store, err := svcsql.NewSqlStore(driver, sql.NewSchemaRegistry("KONGHQ"))
 				if err != nil {
 					return
 				}
